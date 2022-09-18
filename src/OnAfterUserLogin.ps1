@@ -13,3 +13,7 @@ distracting users. A few seconds is ideal.
 #>
 
 Write-Host "Windows user `"$($env:USERNAME)`" logged in at $(Get-Date)."
+$secret_id = aws cloudformation describe-stacks --stack-name "WinsMod" --query 'Stacks[0].Outputs[?OutputKey==`MsSqlSecretName`].OutputValue' --output text
+$secret = aws secretsmanager get-secret-value --secret-id $secret_id  --query "SecretString" --output text | ConvertFrom-Json
+Write-Host "Restoring database to MSSQL server" 
+sqlcmd -U $secret.username -S $secret.host -P $secret.password -i sql-init.sql
